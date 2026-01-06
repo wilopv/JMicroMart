@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="9f75a7ee-2fb4-4e34-b113-fb1e4c3c8967" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/user-service/src/main/java/com/jmicromart/userservice/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/user-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/user-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/services/user-service/src/test/resources/application-test.yml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/user-service/src/test/resources/application-test.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="37rIsEYt73y8v3WymijxMpV3bwL" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9f75a7ee-2fb4-4e34-b113-fb1e4c3c8967" name="Changes" comment="" />
+      <created>1767654968573</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1767654968573</updated>
+    </task>
+    <servers />
+  </component>
+</project>

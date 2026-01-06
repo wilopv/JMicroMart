@@ -1,5 +1,7 @@
 package com.jmicromart.userservice.controller;
 
+import com.jmicromart.userservice.dto.LoginRequest;
+import com.jmicromart.userservice.dto.LoginResponse;
 import com.jmicromart.userservice.dto.RegisterRequest;
 import com.jmicromart.userservice.dto.UserResponse;
 import com.jmicromart.userservice.service.UserService;
@@ -31,5 +33,14 @@ public class UserController {
   public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
     UserResponse response = userService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/login")
+  /**
+   * Authenticates a user and returns a JWT.
+   */
+  public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    LoginResponse response = userService.login(request);
+    return ResponseEntity.ok(response);
   }
 }

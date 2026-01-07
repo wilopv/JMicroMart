@@ -26,13 +26,13 @@ class GatewayRoutesTest {
 
   @Test
   /**
-   * Confirms the gateway includes users and products routes.
+   * Confirms the gateway includes users and products routes for the active profile.
    */
   void routesIncludeUsersAndProducts() {
     var routeIds = routeLocator.getRoutes().collectList().block().stream()
         .map(route -> route.getId())
         .collect(Collectors.toSet());
 
-    assertThat(routeIds).contains("user-service", "product-service");
+    assertThat(routeIds).contains("test-user-service", "test-product-service");
   }
 }

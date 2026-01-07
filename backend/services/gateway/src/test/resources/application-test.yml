@@ -1,5 +1,22 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: test-user-service
+          uri: forward:/__test/users
+          predicates:
+            - Path=/api/users/**
+        - id: test-product-service
+          uri: forward:/__test/products
+          predicates:
+            - Path=/api/products/**
+
 eureka:
   client:
     enabled: false
     register-with-eureka: false
     fetch-registry: false
+
+jwt:
+  secret: test-secret
+  expiration-ms: 60000

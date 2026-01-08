@@ -66,4 +66,28 @@ class ProductCatalogIntegrationTest {
 
     assertThat(productRepository.count()).isEqualTo(1);
   }
+
+  @Test
+  void getProductByIdReturnsProductWhenItExists() throws Exception {
+    Product product = new Product();
+    product.setName("Te Muestreo");
+    product.setDescription("Mezclas herbales.");
+    product.setPrice(new BigDecimal("7.25"));
+    product.setImageUrl("https://example.com/te.jpg");
+    Product saved = productRepository.save(product);
+
+    mockMvc.perform(get("/api/products/{id}", saved.getId()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(saved.getId()))
+        .andExpect(jsonPath("$.name").value("Te Muestreo"))
+        .andExpect(jsonPath("$.description").value("Mezclas herbales."))
+        .andExpect(jsonPath("$.price").value(7.25))
+        .andExpect(jsonPath("$.imageUrl").value("https://example.com/te.jpg"));
+  }
+
+  @Test
+  void getProductByIdReturnsNotFoundWhenMissing() throws Exception {
+    mockMvc.perform(get("/api/products/{id}", 9999))
+        .andExpect(status().isNotFound());
+  }
 }

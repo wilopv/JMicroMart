@@ -3,6 +3,7 @@ package com.jmicromart.userservice.service;
 import com.jmicromart.userservice.dto.LoginRequest;
 import com.jmicromart.userservice.dto.LoginResponse;
 import com.jmicromart.userservice.dto.RegisterRequest;
+import com.jmicromart.userservice.dto.UserProfileResponse;
 import com.jmicromart.userservice.dto.UserResponse;
 import com.jmicromart.userservice.entity.User;
 import com.jmicromart.userservice.repository.UserRepository;
@@ -59,5 +60,19 @@ public class UserService {
     }
 
     return new LoginResponse(jwtService.generateToken(user.getEmail()));
+  }
+
+  /**
+   * Returns the user profile for the given identifier.
+   */
+  public UserProfileResponse getProfile(Long userId, String rolesOverride) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+    String roles = rolesOverride == null || rolesOverride.isBlank()
+        ? user.getRoles()
+        : rolesOverride;
+
+    return new UserProfileResponse(user.getId(), user.getEmail(), roles);
   }
 }

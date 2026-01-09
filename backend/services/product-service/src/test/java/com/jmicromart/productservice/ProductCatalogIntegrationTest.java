@@ -49,20 +49,20 @@ class ProductCatalogIntegrationTest {
   void getProductsReturnsExistingProducts() throws Exception {
     // Seed a product and verify it's returned with all fields.
     Product product = new Product();
-    product.setName("Auriculares Inalámbricos");
-    product.setDescription("Auriculares inalámbricos de alta calidad.");
+    product.setName("Teclado Mecanico");
+    product.setDescription("Teclado mecanico con switches tactiles.");
     product.setPrice(new BigDecimal("12.50"));
-    product.setImageUrl("https://example.com/auriculares.jpg");
+    product.setImageUrl("https://example.com/teclado.jpg");
     productRepository.save(product);
 
     mockMvc.perform(get("/api/products"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").isNumber())
-        .andExpect(jsonPath("$[0].name").value("Auriculares Inalámbricos"))
-        .andExpect(jsonPath("$[0].description").value("Auriculares inalámbricos de alta calidad."))
+        .andExpect(jsonPath("$[0].name").value("Teclado Mecanico"))
+        .andExpect(jsonPath("$[0].description").value("Teclado mecanico con switches tactiles."))
         .andExpect(jsonPath("$[0].price").value(12.50))
-        .andExpect(jsonPath("$[0].imageUrl").value("https://example.com/auriculares.jpg"));
+        .andExpect(jsonPath("$[0].imageUrl").value("https://example.com/teclado.jpg"));
 
     assertThat(productRepository.count()).isEqualTo(1);
   }
@@ -70,19 +70,19 @@ class ProductCatalogIntegrationTest {
   @Test
   void getProductByIdReturnsProductWhenItExists() throws Exception {
     Product product = new Product();
-    product.setName("Te Muestreo");
-    product.setDescription("Mezclas herbales.");
+    product.setName("Monitor 27");
+    product.setDescription("Monitor IPS para programacion.");
     product.setPrice(new BigDecimal("7.25"));
-    product.setImageUrl("https://example.com/te.jpg");
+    product.setImageUrl("https://example.com/monitor.jpg");
     Product saved = productRepository.save(product);
 
     mockMvc.perform(get("/api/products/{id}", saved.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(saved.getId()))
-        .andExpect(jsonPath("$.name").value("Te Muestreo"))
-        .andExpect(jsonPath("$.description").value("Mezclas herbales."))
+        .andExpect(jsonPath("$.name").value("Monitor 27"))
+        .andExpect(jsonPath("$.description").value("Monitor IPS para programacion."))
         .andExpect(jsonPath("$.price").value(7.25))
-        .andExpect(jsonPath("$.imageUrl").value("https://example.com/te.jpg"));
+        .andExpect(jsonPath("$.imageUrl").value("https://example.com/monitor.jpg"));
   }
 
   @Test

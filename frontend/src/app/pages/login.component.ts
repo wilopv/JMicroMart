@@ -1,13 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ErrorSnackbarComponent],
   template: `
     <div class="min-h-screen surface-muted px-4 py-12 sm:px-6 lg:px-8 flex items-center justify-center">
       <div class="w-full max-w-md">
@@ -20,8 +21,8 @@ import { AuthService } from '../services/auth.service';
           </div>
 
           <!-- Error Message -->
-          <div *ngIf="error()" class="mt-6 rounded-lg border border-subtle surface-muted p-4">
-            <p class="text-sm text-muted">{{ error() }}</p>
+          <div class="mt-6">
+            <app-error-snackbar *ngIf="error()" [message]="error()" />
           </div>
 
           <!-- Form -->
@@ -88,20 +89,34 @@ export class LoginComponent {
   error = signal<string>('');
   loading = signal(false);
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    // Syncs backend auth errors into local UI state.
+    effect(() => {
+      const authError = this.authService.authErrorMessage();
+      if (authError) {
+        this.error.set(authError);
+        this.loading.set(false);
+      }
+    });
 
+    // Redirects after authentication, honoring returnUrl when present.
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        this.loading.set(false);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/products';
+        this.router.navigate([returnUrl]);
+      }
+    });
+  }
+
+  // Submits credentials to the auth service and toggles loading state.
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
-
-    // Simulate async operation
-    setTimeout(() => {
-      const result = this.authService.login(this.email, this.password);
-      this.loading.set(false);
-
-      if (!result.success) {
-        this.error.set(result.message);
-      }
-    }, 500);
+    this.authService.login(this.email, this.password);
   }
 }

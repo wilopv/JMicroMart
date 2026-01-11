@@ -5,6 +5,9 @@ import { HttpErrorResponse } from '@angular/common/http';
  */
 export const extractHttpErrorMessage = (error: unknown): string => {
   if (error instanceof HttpErrorResponse) {
+    if (error.status === 401) {
+      return 'Credenciales invalidas';
+    }
     const payload = error.error as { message?: string } | string | null;
     if (typeof payload === 'string' && payload.trim().length > 0) {
       return payload;
@@ -14,5 +17,5 @@ export const extractHttpErrorMessage = (error: unknown): string => {
     }
     return error.message;
   }
-  return 'An unexpected error occurred';
+  return 'Ocurrio un error inesperado';
 };

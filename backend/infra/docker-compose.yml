@@ -1,0 +1,96 @@
+services:
+  postgres-user:
+    image: postgres:16
+    container_name: jmicromart-postgres-user
+    environment:
+      POSTGRES_DB: ${USER_DB_NAME}
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+
+  postgres-product:
+    image: postgres:16
+    container_name: jmicromart-postgres-product
+    environment:
+      POSTGRES_DB: ${PRODUCT_DB_NAME}
+      POSTGRES_USER: ${PRODUCT_DB_USER}
+      POSTGRES_PASSWORD: ${PRODUCT_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - product-db-data:/var/lib/postgresql/data
+
+  discovery:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: jmicromart-discovery
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command: mvn -pl services/discovery spring-boot:run -Dspring-boot.run.profiles=docker
+    ports:
+      - "8761:8761"
+
+  gateway:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: jmicromart-gateway
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command: mvn -pl services/gateway spring-boot:run -Dspring-boot.run.profiles=docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+
+  user-service:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: jmicromart-user-service
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command: mvn -pl services/user-service spring-boot:run -Dspring-boot.run.profiles=docker
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery
+      - postgres-user
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      USER_DB_HOST: postgres-user
+      USER_DB_PORT: 5432
+      USER_DB_NAME: ${USER_DB_NAME}
+      USER_DB_USER: ${USER_DB_USER}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
+
+  product-service:
+    image: maven:3.9-eclipse-temurin-21
+    container_name: jmicromart-product-service
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command: mvn -pl services/product-service spring-boot:run -Dspring-boot.run.profiles=docker
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery
+      - postgres-product
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      PRODUCT_DB_HOST: postgres-product
+      PRODUCT_DB_PORT: 5432
+      PRODUCT_DB_NAME: ${PRODUCT_DB_NAME}
+      PRODUCT_DB_USER: ${PRODUCT_DB_USER}
+      PRODUCT_DB_PASSWORD: ${PRODUCT_DB_PASSWORD}
+
+volumes:
+  user-db-data:
+  product-db-data:

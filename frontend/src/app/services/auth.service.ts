@@ -1,106 +1,144 @@
-import { Injectable } from '@angular/core';
-import { signal, computed } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-}
-
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  user?: User;
-}
+import { catchError, map, switchMap, tap, throwError } from 'rxjs';
+import { AuthResponse, User } from '../models/auth.model';
+import { createAuthApi } from './auth/auth.api';
+import { extractHttpErrorMessage } from '../utils/http-errors';
+import { mapMeToUser } from './auth/auth.mappers';
+import { clearToken, readToken, writeToken } from './auth/auth.session';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private token = signal<string | null>(null);
   private currentUser = signal<User | null>(null);
-  isAuthenticated = computed(() => this.currentUser() !== null);
+  isAuthenticated = computed(() => this.token() !== null);
   user = this.currentUser.asReadonly();
+  private authError = signal<string | null>(null);
+  authErrorMessage = this.authError.asReadonly();
+  private api: ReturnType<typeof createAuthApi>;
 
-  constructor(private router: Router) {
-    this.loadFromLocalStorage();
+  constructor(private router: Router, private http: HttpClient) {
+    this.api = createAuthApi(this.http);
+    this.loadSessionFromStorage();
   }
 
+  /**
+   * Initiates a login request and hydrates the session on success.
+   */
   login(email: string, password: string): AuthResponse {
-    // Mock validation
-    if (!email || !password) {
-      return { success: false, message: 'Email y contraseña son requeridos' };
-    }
+    this.authError.set(null);
 
-    if (password.length < 4) {
-      return { success: false, message: 'La contraseña debe tener al menos 4 caracteres' };
-    }
+    this.api
+      .login(email, password)
+      .pipe(
+        tap((response) => this.setToken(response.token)),
+        switchMap(() => this.getMe())
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/products']);
+        },
+        error: (error) => {
+          this.handleAuthError(error);
+        },
+      });
 
-    // Mock user
-    const user: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: email.split('@')[0],
-      email: email,
-      createdAt: new Date(),
-    };
-
-    this.currentUser.set(user);
-    this.saveToLocalStorage(user);
-    this.router.navigate(['/products']);
-
-    return { success: true, message: 'Login exitoso', user };
+    return { success: true, message: 'Login exitoso' };
   }
 
+  /**
+   * Registers a user and starts an authenticated session when successful.
+   */
   register(userData: { name: string; email: string; password: string; confirmPassword: string }): AuthResponse {
-    // Mock validation
-    if (!userData.name || !userData.email || !userData.password) {
-      return { success: false, message: 'Todos los campos son requeridos' };
-    }
+    this.authError.set(null);
 
-    if (userData.password !== userData.confirmPassword) {
-      return { success: false, message: 'Las contraseñas no coinciden' };
-    }
-
-    if (userData.password.length < 4) {
-      return { success: false, message: 'La contraseña debe tener al menos 4 caracteres' };
-    }
-
-    // Mock user creation
-    const user: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: userData.name,
+    const registerPayload = {
       email: userData.email,
-      createdAt: new Date(),
+      password: userData.password,
     };
 
-    this.currentUser.set(user);
-    this.saveToLocalStorage(user);
-    this.router.navigate(['/products']);
+    this.api
+      .register(registerPayload.email, registerPayload.password)
+      .pipe(
+        switchMap(() => this.api.login(userData.email, userData.password)),
+        tap((response) => this.setToken(response.token)),
+        switchMap(() => this.getMe())
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/products']);
+        },
+        error: (error) => {
+          this.handleAuthError(error);
+        },
+      });
 
-    return { success: true, message: 'Registro exitoso', user };
+    return { success: true, message: 'Registro exitoso' };
   }
 
+  /**
+   * Fetches the authenticated user's profile from the backend.
+   */
+  getMe() {
+    return this.api.getMe().pipe(
+      map((response) => mapMeToUser(response)),
+      tap((user) => this.currentUser.set(user)),
+      catchError((error) => throwError(() => error))
+    );
+  }
+
+  /**
+   * Clears the session state and returns the user to the home screen.
+   */
   logout(): void {
-    this.currentUser.set(null);
-    localStorage.removeItem('currentUser');
+    this.clearSession();
     this.router.navigate(['/']);
   }
 
-  private saveToLocalStorage(user: User): void {
-    localStorage.setItem('currentUser', JSON.stringify(user));
+  /**
+   * Restores the persisted token and hydrates the user session when possible.
+   */
+  private loadSessionFromStorage(): void {
+    const token = readToken();
+    if (!token) {
+      return;
+    }
+
+    this.token.set(token);
+    this.getMe().subscribe({
+      error: () => {
+        this.clearSession();
+      },
+    });
   }
 
-  private loadFromLocalStorage(): void {
-    const stored = localStorage.getItem('currentUser');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        user.createdAt = new Date(user.createdAt);
-        this.currentUser.set(user);
-      } catch (e) {
-        localStorage.removeItem('currentUser');
-      }
+  /**
+   * Persists the JWT token and updates the reactive auth state.
+   */
+  private setToken(token: string): void {
+    this.token.set(token);
+    writeToken(token);
+  }
+
+  /**
+   * Clears stored credentials and local user state.
+   */
+  private clearSession(): void {
+    this.token.set(null);
+    this.currentUser.set(null);
+    clearToken();
+  }
+
+  /**
+   * Stores an auth error message without throwing in UI-specific ways.
+   */
+  private handleAuthError(error: unknown): void {
+    this.authError.set(extractHttpErrorMessage(error));
+    if (error instanceof HttpErrorResponse && error.status === 401) {
+      this.clearSession();
     }
   }
 }

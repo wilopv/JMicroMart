@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${PRODUCT_DB_HOST}:${PRODUCT_DB_PORT}/${PRODUCT_DB_NAME}
+    username: ${PRODUCT_DB_USER}
+    password: ${PRODUCT_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+eureka:
+  instance:
+    hostname: product-service
+    prefer-ip-address: false

@@ -10,33 +10,34 @@
 
 ## Auth
 
-### POST `/auth/register`
+### POST `/api/users/register`
 Registers a user.
 - **Request**: `{ "email": string, "password": string }`
 - **Response**: `201` `{ "id": string, "email": string, "roles": [string] }`
 
-### POST `/auth/login`
+### POST `/api/users/login`
 Authenticates a user and returns a JWT.
 - **Request**: `{ "email": string, "password": string }`
 - **Response**: `200` `{ "token": string }`
 
-### GET `/me`
+### GET `/api/users/me`
 Returns the current authenticated user.
 - **Headers**: `Authorization: Bearer <jwt>`
 - **Response**: `200` `{ "id": string, "email": string, "roles": [string] }`
 
-### GET `/me/addresses`
+### GET `/api/users/me/addresses`
 Returns the authenticated user's saved addresses (read-only).
 - **Headers**: `Authorization: Bearer <jwt>`
 - **Response**: `200` `[ { "id": string, "type": "DELIVERY" | "BILLING", "label": string, "line1": string, "line2": string, "city": string, "state": string, "postalCode": string, "country": string } ]`
+- **Status**: Planned feature (not implemented yet).
 
 ## Products
 
-### GET `/products`
+### GET `/api/products`
 Returns product list (read-only).
 - **Response**: `200` `[ { "id": string, "name": string, "price": number, "currency": string, "imageUrl": string, "inStock": boolean } ]`
 
-### GET `/products/{id}`
+### GET `/api/products/{id}`
 Returns product detail (read-only).
 - **Response**: `200` `{ "id": string, "name": string, "description": string, "price": number, "currency": string, "category": string, "imageUrl": string, "inStock": boolean }`
 
@@ -45,6 +46,7 @@ Returns product detail (read-only).
 ### GET `/health`
 Basic availability check.
 - **Response**: `200` `{ "status": "ok" }`
+- **Status**: Planned feature (not implemented yet).
 
 ## Errors
 

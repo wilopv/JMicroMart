@@ -28,10 +28,22 @@ spring:
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/users/**
+        - id: user-service-docs
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/docs/user/**
+          filters:
+            - StripPrefix=2
         - id: product-service
           uri: lb://PRODUCT-SERVICE
           predicates:
             - Path=/api/products/**
+        - id: product-service-docs
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+            - Path=/docs/product/**
+          filters:
+            - StripPrefix=2
 
 eureka:
   client:

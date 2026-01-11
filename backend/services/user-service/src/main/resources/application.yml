@@ -24,3 +24,8 @@ management:
   endpoint:
     health:
       show-details: never
+
+springdoc:
+  swagger-ui:
+    config-url: /docs/user/v3/api-docs/swagger-config
+    url: /docs/user/v3/api-docs

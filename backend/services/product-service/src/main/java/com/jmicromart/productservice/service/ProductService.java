@@ -14,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class ProductService {
 
   private final ProductRepository productRepository;
+  private static final double DEFAULT_RATING = 4.6;
+  private static final int DEFAULT_REVIEWS = 28;
 
   public ProductService(ProductRepository productRepository) {
     this.productRepository = productRepository;
@@ -24,9 +26,11 @@ public class ProductService {
         .map(product -> new ProductResponse(
             product.getId(),
             product.getName(),
-            product.getDescription(),
             product.getPrice(),
-            product.getImageUrl()))
+            product.getImageUrl(),
+            product.getCategory(),
+            DEFAULT_RATING,
+            DEFAULT_REVIEWS))
         .toList();
   }
 
@@ -37,8 +41,10 @@ public class ProductService {
     return new ProductResponse(
         product.getId(),
         product.getName(),
-        product.getDescription(),
         product.getPrice(),
-        product.getImageUrl());
+        product.getImageUrl(),
+        product.getCategory(),
+        DEFAULT_RATING,
+        DEFAULT_REVIEWS);
   }
 }

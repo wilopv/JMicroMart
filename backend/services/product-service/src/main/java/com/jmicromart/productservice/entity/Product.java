@@ -36,4 +36,7 @@ public class Product {
 
   @Column(nullable = false)
   private String imageUrl;
+
+  @Column(nullable = false)
+  private String category;
 }

@@ -53,6 +53,7 @@ class ProductCatalogIntegrationTest {
     product.setDescription("Teclado mecanico con switches tactiles.");
     product.setPrice(new BigDecimal("12.50"));
     product.setImageUrl("https://example.com/teclado.jpg");
+    product.setCategory("Electronica");
     productRepository.save(product);
 
     mockMvc.perform(get("/api/products"))
@@ -60,9 +61,11 @@ class ProductCatalogIntegrationTest {
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").isNumber())
         .andExpect(jsonPath("$[0].name").value("Teclado Mecanico"))
-        .andExpect(jsonPath("$[0].description").value("Teclado mecanico con switches tactiles."))
         .andExpect(jsonPath("$[0].price").value(12.50))
-        .andExpect(jsonPath("$[0].imageUrl").value("https://example.com/teclado.jpg"));
+        .andExpect(jsonPath("$[0].image").value("https://example.com/teclado.jpg"))
+        .andExpect(jsonPath("$[0].category").value("Electronica"))
+        .andExpect(jsonPath("$[0].rating").isNumber())
+        .andExpect(jsonPath("$[0].reviews").isNumber());
 
     assertThat(productRepository.count()).isEqualTo(1);
   }
@@ -74,15 +77,18 @@ class ProductCatalogIntegrationTest {
     product.setDescription("Monitor IPS para programacion.");
     product.setPrice(new BigDecimal("7.25"));
     product.setImageUrl("https://example.com/monitor.jpg");
+    product.setCategory("Electronica");
     Product saved = productRepository.save(product);
 
     mockMvc.perform(get("/api/products/{id}", saved.getId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(saved.getId()))
         .andExpect(jsonPath("$.name").value("Monitor 27"))
-        .andExpect(jsonPath("$.description").value("Monitor IPS para programacion."))
         .andExpect(jsonPath("$.price").value(7.25))
-        .andExpect(jsonPath("$.imageUrl").value("https://example.com/monitor.jpg"));
+        .andExpect(jsonPath("$.image").value("https://example.com/monitor.jpg"))
+        .andExpect(jsonPath("$.category").value("Electronica"))
+        .andExpect(jsonPath("$.rating").isNumber())
+        .andExpect(jsonPath("$.reviews").isNumber());
   }
 
   @Test

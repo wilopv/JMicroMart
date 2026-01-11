@@ -30,93 +30,110 @@ public class ProductDataInitializer implements CommandLineRunner {
             "Teclado Mecanico Compacto",
             "Teclas tactiles para escritura rapida.",
             new BigDecimal("59.90"),
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Mouse Ergonomico",
             "Diseno comodo para largas jornadas.",
             new BigDecimal("24.50"),
-            "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Monitor 27 IPS",
             "Colores vivos para desarrollo y diseno.",
             new BigDecimal("189.00"),
-            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Auriculares con Microfono",
             "Sonido claro para videollamadas.",
             new BigDecimal("39.95"),
-            "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80",
+            "Wearables"),
         createProduct(
             "Webcam Full HD",
             "Imagen nitida en reuniones online.",
             new BigDecimal("49.90"),
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Laptop 14 Ultraligera",
             "Rendimiento fluido y bateria duradera.",
             new BigDecimal("899.00"),
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Docking USB-C",
             "Puertos extra para tu escritorio.",
             new BigDecimal("69.00"),
-            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Disco SSD 1TB",
             "Arranques rapidos y mas espacio.",
             new BigDecimal("79.99"),
-            "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Router WiFi 6",
             "Cobertura estable para todo el hogar.",
             new BigDecimal("109.00"),
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+            "Electrónica"),
         createProduct(
             "Teclado Numerico",
             "Complemento ideal para contabilidad.",
             new BigDecimal("19.90"),
-            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Hub USB 4 Puertos",
             "Conecta varios dispositivos a la vez.",
             new BigDecimal("14.99"),
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Soporte para Portatil",
             "Mejora postura y ventilacion.",
             new BigDecimal("22.00"),
-            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Alfombrilla XL",
             "Superficie amplia para teclado y mouse.",
             new BigDecimal("12.00"),
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Teclado Inalambrico",
             "Escritura silenciosa sin cables.",
             new BigDecimal("29.90"),
-            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Mousepad con Reposamunecas",
             "Soporte suave para la muneca.",
             new BigDecimal("9.90"),
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"),
+            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80",
+            "Accesorios"),
         createProduct(
             "Cable USB-C 2m",
             "Carga rapida y datos estables.",
             new BigDecimal("6.50"),
-            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80")
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+            "Accesorios")
     );
 
     productRepository.saveAll(products);
   }
 
-  private Product createProduct(String name, String description, BigDecimal price, String imageUrl) {
+  private Product createProduct(String name, String description, BigDecimal price, String imageUrl, String category) {
     Product product = new Product();
     product.setName(name);
     product.setDescription(description);
     product.setPrice(price);
     product.setImageUrl(imageUrl);
+    product.setCategory(category);
     return product;
   }
 }

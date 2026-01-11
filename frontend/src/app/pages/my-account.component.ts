@@ -27,12 +27,6 @@ import { AuthService } from '../services/auth.service';
               <h2 class="text-2xl font-bold text-strong">Información de Perfil</h2>
 
               <div class="mt-8 space-y-6">
-                <!-- Name -->
-                <div>
-                  <label class="block text-sm font-medium text-muted">Nombre Completo</label>
-                  <p class="mt-2 text-lg text-strong">{{ authService.user()?.name }}</p>
-                </div>
-
                 <!-- Email -->
                 <div>
                   <label class="block text-sm font-medium text-muted">Correo Electrónico</label>

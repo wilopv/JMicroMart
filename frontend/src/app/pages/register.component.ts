@@ -1,13 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ErrorSnackbarComponent],
   template: `
     <div class="min-h-screen surface-muted px-4 py-12 sm:px-6 lg:px-8 flex items-center justify-center">
       <div class="w-full max-w-md">
@@ -20,25 +21,12 @@ import { AuthService } from '../services/auth.service';
           </div>
 
           <!-- Error Message -->
-          <div *ngIf="error()" class="mt-6 rounded-lg border border-subtle surface-muted p-4">
-            <p class="text-sm text-muted">{{ error() }}</p>
+          <div class="mt-6">
+            <app-error-snackbar *ngIf="error()" [message]="error()" />
           </div>
 
           <!-- Form -->
           <form (ngSubmit)="onSubmit()" class="mt-8 space-y-4">
-            <!-- Name Input -->
-            <div>
-              <label class="block text-sm font-medium text-strong">Nombre Completo</label>
-              <input
-                type="text"
-                [(ngModel)]="name"
-                name="name"
-                required
-                class="input input-muted mt-2"
-                placeholder="Tu nombre"
-              />
-            </div>
-
             <!-- Email Input -->
             <div>
               <label class="block text-sm font-medium text-strong">Correo Electrónico</label>
@@ -109,32 +97,39 @@ import { AuthService } from '../services/auth.service';
   styles: [],
 })
 export class RegisterComponent {
-  name = '';
   email = '';
   password = '';
   confirmPassword = '';
   error = signal<string>('');
   loading = signal(false);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    // Syncs backend auth errors into local UI state.
+    effect(() => {
+      const authError = this.authService.authErrorMessage();
+      if (authError) {
+        this.error.set(authError);
+        this.loading.set(false);
+      }
+    });
 
+    // Stops the spinner after authentication completes.
+    effect(() => {
+      if (this.authService.isAuthenticated()) {
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // Submits registration data to the auth service and toggles loading state.
   onSubmit() {
     this.error.set('');
     this.loading.set(true);
 
-    // Simulate async operation
-    setTimeout(() => {
-      const result = this.authService.register({
-        name: this.name,
-        email: this.email,
-        password: this.password,
-        confirmPassword: this.confirmPassword,
-      });
-      this.loading.set(false);
-
-      if (!result.success) {
-        this.error.set(result.message);
-      }
-    }, 500);
+    this.authService.register({
+      email: this.email,
+      password: this.password,
+      confirmPassword: this.confirmPassword,
+    });
   }
 }

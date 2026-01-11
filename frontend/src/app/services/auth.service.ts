@@ -52,7 +52,7 @@ export class AuthService {
   /**
    * Registers a user and starts an authenticated session when successful.
    */
-  register(userData: { name: string; email: string; password: string; confirmPassword: string }): AuthResponse {
+  register(userData: { name?: string; email: string; password: string; confirmPassword: string }): AuthResponse {
     this.authError.set(null);
 
     const registerPayload = {

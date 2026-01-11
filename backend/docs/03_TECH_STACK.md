@@ -1,7 +1,7 @@
 # Technology Stack
 
 1. **Runtime**: Java 21.
-2. **Frameworks**: Spring Boot 3.x, Spring Cloud 2023.x.
+2. **Frameworks**: Spring Boot 3.x, Spring Cloud 2024.x.
 3. **Architecture**: Microservices with Eureka discovery and Spring Cloud Gateway.
 4. **Persistence**: Spring Data JPA + PostgreSQL (per service).
 5. **Security**: JWT (generation in user-service, validation in gateway), BCrypt password hashing.

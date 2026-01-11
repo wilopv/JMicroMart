@@ -1,53 +1,38 @@
-# Database Schema
+﻿# Database Schema
 
 ## Status
-Initial backend schema. Update as services evolve.
+Current MVP schema implemented in the backend.
 
 ## user-service
 
 ### users
-- **id**: UUID, PK
+- **id**: bigint, PK (auto-generated)
 - **email**: varchar, unique, required
 - **password_hash**: varchar, required
-- **roles**: varchar[] or text (comma-separated), required
-- **created_at**: timestamp, required
-- **updated_at**: timestamp, required
+- **roles**: varchar (comma-separated), required
 
 ### addresses
-- **id**: UUID, PK
-- **user_id**: UUID, FK to users.id
-- **type**: varchar (DELIVERY | BILLING), required
-- **label**: varchar, optional
-- **line1**: varchar, required
-- **line2**: varchar, optional
+- **id**: bigint, PK (auto-generated)
+- **user_id**: varchar, required
+- **street**: varchar, required
 - **city**: varchar, required
-- **state**: varchar, optional
+- **country**: varchar, required
 - **postal_code**: varchar, required
-- **country**: varchar(2), required
-- **created_at**: timestamp, required
-- **updated_at**: timestamp, required
 
 Notes:
 - Store only password hashes (BCrypt).
 - Roles include `USER` at minimum.
+- `user_id` is a header-derived identifier; no FK enforced in MVP.
 
 ## product-service
 
 ### products
-- **id**: UUID, PK
+- **id**: bigint, PK (auto-generated)
 - **name**: varchar, required
 - **description**: text, optional
 - **price**: numeric(12,2), required
-- **currency**: varchar(3), required
-- **category**: varchar, optional
 - **image_url**: varchar, optional
-- **in_stock**: boolean, required
-- **created_at**: timestamp, required
-- **updated_at**: timestamp, required
 
 ## Relationships
 - User has many addresses (user-service only).
 - No cross-service relationships or joins.
-
-## Data Migration
-- Optional at this stage; add Flyway when schema changes become frequent.

@@ -5,6 +5,13 @@ spring:
   application:
     name: user-service
 
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
 jwt:
   secret: ${JWT_SECRET:dev-secret}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}

@@ -30,13 +30,13 @@ public class JwtService {
     this.expirationMs = expirationMs;
   }
 
-  public String generateToken(String email) {
+  public String generateToken(String userId) {
     // Use epoch seconds for iat/exp to keep claims compact.
     long now = Instant.now().getEpochSecond();
     long exp = Instant.now().plusMillis(expirationMs).getEpochSecond();
 
     String header = toBase64Url(Map.of("alg", "HS256", "typ", "JWT"));
-    String payload = toBase64Url(Map.of("sub", email, "iat", now, "exp", exp));
+    String payload = toBase64Url(Map.of("sub", userId, "iat", now, "exp", exp));
 
     String signature = sign(header + "." + payload);
     return header + "." + payload + "." + signature;

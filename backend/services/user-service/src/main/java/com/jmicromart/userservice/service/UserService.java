@@ -59,7 +59,7 @@ public class UserService {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
     }
 
-    return new LoginResponse(jwtService.generateToken(user.getEmail()));
+    return new LoginResponse(jwtService.generateToken(String.valueOf(user.getId())));
   }
 
   /**

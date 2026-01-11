@@ -2,7 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, map, switchMap, tap, throwError } from 'rxjs';
-import { AuthResponse, User } from '../models/auth.model';
+import { AuthResponse, User } from '../models/auth/auth.model';
 import { createAuthApi } from './auth/auth.api';
 import { extractHttpErrorMessage } from '../utils/http-errors';
 import { mapMeToUser } from './auth/auth.mappers';

@@ -1,4 +1,4 @@
-import { MeResponse, User } from '../../models/auth.model';
+import { MeResponse, User } from '../../models/auth/auth.model';
 
 /**
  * Maps the backend profile payload into the local user model.

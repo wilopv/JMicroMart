@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { API_CONFIG } from '../../config/api.config';
-import { LoginResponse, MeResponse } from '../../models/auth.model';
+import { LoginResponse, MeResponse } from '../../models/auth/auth.model';
 
 /**
  * Creates a lightweight API wrapper for authentication endpoints.

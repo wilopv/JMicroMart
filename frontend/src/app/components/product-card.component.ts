@@ -2,16 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../services/cart.service';
 import { FavoritesService } from '../services/favorites.service';
-
-export interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  category: string;
-}
+import { Product } from '../models/product/product.model';
 
 @Component({
   selector: 'app-product-card',

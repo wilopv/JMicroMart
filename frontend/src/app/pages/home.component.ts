@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ProductCardComponent, Product } from '../components/product-card.component';
+import { ProductCardComponent } from '../components/product-card.component';
 import { SearchBarComponent } from '../components/search-bar.component';
+import { ProductService } from '../services/product.service';
+import { Product } from '../models/product/product.model';
 
 @Component({
   selector: 'app-home',
@@ -103,43 +105,22 @@ import { SearchBarComponent } from '../components/search-bar.component';
   styles: [],
 })
 export class HomeComponent {
-  featuredProducts: Product[] = [
-    {
-      id: 1,
-      name: 'Auriculares Inalámbricos Premium',
-      price: 149.99,
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 328,
-      category: 'Electrónica',
-    },
-    {
-      id: 2,
-      name: 'Reloj Inteligente Pro',
-      price: 299.99,
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 256,
-      category: 'Wearables',
-    },
-    {
-      id: 3,
-      name: 'Mochila Minimalista',
-      price: 89.99,
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 412,
-      category: 'Accesorios',
-    },
-    {
-      id: 4,
-      name: 'Cámara Web Ultra HD',
-      price: 199.99,
-      image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 189,
-      category: 'Electrónica',
-    },
-  ];
+  featuredProducts: Product[] = [];
+
+  constructor(private productService: ProductService) {
+    this.loadFeaturedProducts();
+  }
+
+  // Loads a small subset of products for the home page.
+  private loadFeaturedProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.featuredProducts = products.slice(0, 4);
+      },
+      error: () => {
+        this.featuredProducts = [];
+      },
+    });
+  }
 }
 

@@ -1,8 +1,10 @@
 import { Component, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { ProductCardComponent, Product } from '../components/product-card.component';
+import { ProductCardComponent } from '../components/product-card.component';
 import { SearchBarComponent } from '../components/search-bar.component';
+import { ProductService } from '../services/product.service';
+import { Product } from '../models/product/product.model';
 
 @Component({
   selector: 'app-products',
@@ -35,7 +37,7 @@ import { SearchBarComponent } from '../components/search-bar.component';
               <div>
                 <h3 class="text-lg font-semibold text-strong">Categorías</h3>
                 <div class="mt-4 space-y-3">
-                  <label *ngFor="let category of categories" class="flex items-center cursor-pointer">
+                  <label *ngFor="let category of categories()" class="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       [checked]="selectedCategories().includes(category)"
@@ -125,17 +127,19 @@ export class ProductsComponent {
   selectedPrice = signal<string>('');
   sortBy = signal<string>('featured');
   searchTerm = signal<string>('');
+  products = signal<Product[]>([]);
+  categories = signal<string[]>([]);
 
-  constructor(private route: ActivatedRoute) {
+  constructor(private route: ActivatedRoute, private productService: ProductService) {
     effect(() => {
       this.route.queryParams.subscribe((params) => {
         const q = params['q'] || '';
         this.searchTerm.set(q);
       });
     });
-  }
 
-  categories = ['Electrónica', 'Wearables', 'Accesorios', 'Moda'];
+    this.loadProducts();
+  }
 
   priceRanges = [
     { label: 'Menos de $50', min: 0, max: 50 },
@@ -144,119 +148,8 @@ export class ProductsComponent {
     { label: 'Más de $200', min: 200, max: Infinity },
   ];
 
-  allProducts: Product[] = [
-    {
-      id: 1,
-      name: 'Auriculares Inalámbricos Premium',
-      price: 149.99,
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 328,
-      category: 'Electrónica',
-    },
-    {
-      id: 2,
-      name: 'Reloj Inteligente Pro',
-      price: 299.99,
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 256,
-      category: 'Wearables',
-    },
-    {
-      id: 3,
-      name: 'Mochila Minimalista',
-      price: 89.99,
-      image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 412,
-      category: 'Accesorios',
-    },
-    {
-      id: 4,
-      name: 'Cámara Web Ultra HD',
-      price: 199.99,
-      image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 189,
-      category: 'Electrónica',
-    },
-    {
-      id: 5,
-      name: 'Almohadilla de Carga Inalámbrica',
-      price: 39.99,
-      image: 'https://images.unsplash.com/photo-1591290621738-e3bde4a893a4?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 142,
-      category: 'Accesorios',
-    },
-    {
-      id: 6,
-      name: 'Correa de Reloj Cuero Premium',
-      price: 49.99,
-      image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 267,
-      category: 'Wearables',
-    },
-    {
-      id: 7,
-      name: 'SSD Portátil 1TB',
-      price: 129.99,
-      image: 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 201,
-      category: 'Electrónica',
-    },
-    {
-      id: 8,
-      name: 'Gafas de Sol Elegantes',
-      price: 79.99,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 389,
-      category: 'Moda',
-    },
-    {
-      id: 9,
-      name: 'Lámpara de Escritorio Premium',
-      price: 159.99,
-      image: 'https://images.unsplash.com/photo-1565636192335-14c46fa1120d?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 124,
-      category: 'Accesorios',
-    },
-    {
-      id: 10,
-      name: 'Correa de Rastreador de Fitness',
-      price: 59.99,
-      image: 'https://images.unsplash.com/photo-1575311373937-040b3e6f47b7?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 456,
-      category: 'Wearables',
-    },
-    {
-      id: 11,
-      name: 'Camiseta de Algodón Premium',
-      price: 34.99,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop',
-      rating: 4,
-      reviews: 234,
-      category: 'Moda',
-    },
-    {
-      id: 12,
-      name: 'Micrófono Profesional',
-      price: 249.99,
-      image: 'https://images.unsplash.com/photo-1590479773036-5f50e2e7a804?w=500&h=500&fit=crop',
-      rating: 5,
-      reviews: 178,
-      category: 'Electrónica',
-    },
-  ];
-
   filteredProducts = () => {
-    let products = this.allProducts;
+    let products = this.products();
 
     // Filter by search term
     const search = this.searchTerm().toLowerCase();
@@ -301,6 +194,32 @@ export class ProductsComponent {
 
     return products;
   };
+
+  // Loads the product catalog from the backend.
+  private loadProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.products.set(products);
+        this.categories.set(this.extractCategories(products));
+      },
+      error: () => {
+        this.products.set([]);
+        this.categories.set([]);
+      },
+    });
+  }
+
+  // Builds a unique, trimmed category list from the product catalog.
+  private extractCategories(products: Product[]): string[] {
+    const unique = new Set<string>();
+    for (const product of products) {
+      const normalized = product.category?.trim();
+      if (normalized) {
+        unique.add(normalized);
+      }
+    }
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }
 
   toggleCategory(category: string) {
     const current = this.selectedCategories();

@@ -33,6 +33,24 @@ Notes:
 - **price**: numeric(12,2), required
 - **image_url**: varchar, optional
 
+## order-service
+
+### orders
+- **id**: bigint, PK (auto-generated)
+- **user_id**: varchar, required
+- **status**: varchar, required
+- **total_amount**: numeric(12,2), required
+- **created_at**: timestamp, required
+
+### order_items
+- **id**: bigint, PK (auto-generated)
+- **order_id**: bigint, required
+- **product_id**: bigint, required
+- **product_name**: varchar, required
+- **price**: numeric(12,2), required
+- **quantity**: integer, required
+
 ## Relationships
 - User has many addresses (user-service only).
 - No cross-service relationships or joins.
+- Order has many order items (order-service only).

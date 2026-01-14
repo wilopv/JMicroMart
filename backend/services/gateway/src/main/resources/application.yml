@@ -44,6 +44,16 @@ spring:
             - Path=/docs/product/**
           filters:
             - StripPrefix=2
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
+        - id: order-service-docs
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/docs/order/**
+          filters:
+            - StripPrefix=2
 
 eureka:
   client:

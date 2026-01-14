@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../components/product-card.component';
+import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
 import { FavoritesService } from '../services/favorites.service';
 
 @Component({
   selector: 'app-favorites',
   standalone: true,
-  imports: [CommonModule, RouterLink, ProductCardComponent],
+  imports: [CommonModule, RouterLink, ProductCardComponent, ErrorSnackbarComponent],
   template: `
     <div class="surface">
       <!-- Header -->
@@ -20,6 +21,14 @@ import { FavoritesService } from '../services/favorites.service';
 
       <!-- Content -->
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div class="mb-6">
+          <app-error-snackbar *ngIf="favoritesService.errorMessage()" [message]="favoritesService.errorMessage()" />
+        </div>
+
+        <div *ngIf="favoritesService.loadingState()" class="text-sm text-muted">
+          Cargando favoritos...
+        </div>
+
         <div *ngIf="favoritesService.favoritesList().length > 0; else emptyFavorites">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <app-product-card
@@ -32,7 +41,7 @@ import { FavoritesService } from '../services/favorites.service';
     </div>
 
     <ng-template #emptyFavorites>
-      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div *ngIf="!favoritesService.loadingState()" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div class="card rounded-lg surface-muted p-12 text-center shadow-none">
           <svg class="mx-auto h-12 w-12 icon-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -54,5 +63,9 @@ import { FavoritesService } from '../services/favorites.service';
   styles: [],
 })
 export class FavoritesComponent {
-  constructor(public favoritesService: FavoritesService) {}
+  constructor(public favoritesService: FavoritesService) {
+    this.favoritesService.loadFavorites().subscribe({
+      error: () => undefined,
+    });
+  }
 }

@@ -1,43 +1,41 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
+import { API_CONFIG } from '../config/api.config';
+import { Product } from '../models/product/product.model';
+import { Favorite } from '../models/user/favorite.model';
+import { extractHttpErrorMessage } from '../utils/http-errors';
 import { AuthService } from './auth.service';
-
-export interface FavoriteItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  category: string;
-}
+import { ProductService } from './product.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FavoritesService {
-  private storageKey = 'favoritesByUser';
-  private favorites = signal<FavoriteItem[]>([]);
+  private favorites = signal<Product[]>([]);
+  private loading = signal(false);
+  private error = signal<string>('');
 
   favoritesList = this.favorites.asReadonly();
+  loadingState = this.loading.asReadonly();
+  errorMessage = this.error.asReadonly();
 
   totalFavorites = computed(() => this.favorites().length);
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private productService: ProductService
+  ) {
     effect(() => {
-      const user = this.authService.user();
-      if (!user) {
+      if (!this.authService.isAuthenticated()) {
         this.favorites.set([]);
+        this.error.set('');
         return;
       }
-      this.favorites.set(this.loadFavoritesForUser(user.id));
-    });
-
-    effect(() => {
-      const user = this.authService.user();
-      if (!user) {
-        return;
-      }
-      this.saveFavoritesForUser(user.id, this.favorites());
+      this.loadFavorites().subscribe({
+        error: () => undefined,
+      });
     });
   }
 
@@ -49,44 +47,79 @@ export class FavoritesService {
     return this.authService.isAuthenticated();
   }
 
-  toggleFavorite(product: FavoriteItem) {
+  loadFavorites(): Observable<Product[]> {
+    this.loading.set(true);
+    this.error.set('');
+
+    return this.http.get<Favorite[]>(`${API_CONFIG.baseUrl}/api/users/me/favorites`).pipe(
+      switchMap((favorites) => this.resolveFavorites(favorites)),
+      tap((products) => {
+        this.favorites.set(products);
+        this.loading.set(false);
+      }),
+      catchError((error) => {
+        this.loading.set(false);
+        this.error.set(extractHttpErrorMessage(error));
+        return throwError(() => error);
+      })
+    );
+  }
+
+  toggleFavorite(product: Product): Observable<void> {
     if (!this.authService.isAuthenticated()) {
-      return false;
+      return throwError(() => new Error('Favoritos requieren autenticacion.'));
     }
 
     if (this.isFavorite(product.id)) {
-      this.favorites.set(this.favorites().filter((item) => item.id !== product.id));
-      return true;
+      return this.removeFavorite(product.id);
     }
 
-    this.favorites.set([...this.favorites(), product]);
-    return true;
+    return this.addFavorite(product);
   }
 
-  clearFavorites() {
-    this.favorites.set([]);
-  }
-
-  private loadFavoritesForUser(userId: string): FavoriteItem[] {
-    const store = this.readStore();
-    return store[userId] ?? [];
-  }
-
-  private saveFavoritesForUser(userId: string, items: FavoriteItem[]) {
-    const store = this.readStore();
-    store[userId] = items;
-    localStorage.setItem(this.storageKey, JSON.stringify(store));
-  }
-
-  private readStore(): Record<string, FavoriteItem[]> {
-    const raw = localStorage.getItem(this.storageKey);
-    if (!raw) {
-      return {};
+  addFavorite(product: Product): Observable<void> {
+    if (this.isFavorite(product.id)) {
+      return of(undefined);
     }
-    try {
-      return JSON.parse(raw) as Record<string, FavoriteItem[]>;
-    } catch {
-      return {};
+
+    this.error.set('');
+    const previous = this.favorites();
+    this.favorites.set([...previous, product]);
+
+    return this.http
+      .post<void>(`${API_CONFIG.baseUrl}/api/users/me/favorites/${product.id}`, {})
+      .pipe(
+        catchError((error) => {
+          this.favorites.set(previous);
+          this.error.set(extractHttpErrorMessage(error));
+          return throwError(() => error);
+        })
+      );
+  }
+
+  removeFavorite(productId: number): Observable<void> {
+    this.error.set('');
+    const previous = this.favorites();
+    this.favorites.set(previous.filter((item) => item.id !== productId));
+
+    return this.http.delete<void>(`${API_CONFIG.baseUrl}/api/users/me/favorites/${productId}`).pipe(
+      catchError((error) => {
+        this.favorites.set(previous);
+        this.error.set(extractHttpErrorMessage(error));
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private resolveFavorites(items: Favorite[]): Observable<Product[]> {
+    if (!items.length) {
+      return of([]);
     }
+
+    const productRequests = items.map((item) =>
+      this.productService.getProductById(item.productId).pipe(catchError(() => of(null)))
+    );
+
+    return forkJoin(productRequests).pipe(map((results) => results.filter(Boolean) as Product[]));
   }
 }

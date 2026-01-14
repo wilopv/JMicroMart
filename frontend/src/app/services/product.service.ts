@@ -16,4 +16,11 @@ export class ProductService {
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${API_CONFIG.baseUrl}/api/products`);
   }
+
+  /**
+   * Loads a single product detail from the backend.
+   */
+  getProductById(id: number): Observable<Product> {
+    return this.http.get<Product>(`${API_CONFIG.baseUrl}/api/products/${id}`);
+  }
 }

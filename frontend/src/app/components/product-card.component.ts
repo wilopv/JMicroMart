@@ -113,6 +113,8 @@ export class ProductCardComponent {
 
   toggleFavorite(event: MouseEvent) {
     event.stopPropagation();
-    this.favoritesService.toggleFavorite(this.product);
+    this.favoritesService.toggleFavorite(this.product).subscribe({
+      error: () => undefined,
+    });
   }
 }

@@ -42,6 +42,24 @@ public class Order {
   @Column(nullable = false)
   private Instant createdAt;
 
+  @Column
+  private String shippingStreet;
+
+  @Column
+  private String shippingCity;
+
+  @Column
+  private String shippingCountry;
+
+  @Column
+  private String shippingPostalCode;
+
+  @Column
+  private String shippingFirstName;
+
+  @Column
+  private String shippingLastName;
+
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
 }

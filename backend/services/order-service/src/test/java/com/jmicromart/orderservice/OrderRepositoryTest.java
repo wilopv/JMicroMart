@@ -68,4 +68,29 @@ class OrderRepositoryTest {
     assertThat(fetched.getItems().stream().map(OrderItem::getProductId))
         .containsExactlyInAnyOrder(1001L, 2002L);
   }
+
+  @Test
+  void ordersCanPersistShippingAddressSnapshot() {
+    Order order = new Order();
+    order.setUserId("99");
+    order.setStatus("CREATED");
+    order.setTotalAmount(new BigDecimal("59.00"));
+    order.setCreatedAt(Instant.parse("2026-01-02T09:30:00Z"));
+    order.setShippingStreet("742 Evergreen Terrace");
+    order.setShippingCity("Springfield");
+    order.setShippingCountry("US");
+    order.setShippingPostalCode("49007");
+    order.setShippingFirstName("Homer");
+    order.setShippingLastName("Simpson");
+
+    Order saved = orderRepository.save(order);
+
+    Order fetched = orderRepository.findById(saved.getId()).orElseThrow();
+    assertThat(fetched.getShippingStreet()).isEqualTo("742 Evergreen Terrace");
+    assertThat(fetched.getShippingCity()).isEqualTo("Springfield");
+    assertThat(fetched.getShippingCountry()).isEqualTo("US");
+    assertThat(fetched.getShippingPostalCode()).isEqualTo("49007");
+    assertThat(fetched.getShippingFirstName()).isEqualTo("Homer");
+    assertThat(fetched.getShippingLastName()).isEqualTo("Simpson");
+  }
 }

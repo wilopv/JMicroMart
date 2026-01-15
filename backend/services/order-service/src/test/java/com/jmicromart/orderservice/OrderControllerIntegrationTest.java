@@ -51,7 +51,7 @@ class OrderControllerIntegrationTest {
     OrderCreateRequest request = new OrderCreateRequest(List.of(
         new OrderItemRequest(1001L, "Monitor 27 IPS", new BigDecimal("89.99"), 1),
         new OrderItemRequest(2002L, "Mouse Ergonomico", new BigDecimal("20.00"), 2)
-    ));
+    ), null);
 
     mockMvc.perform(post("/api/orders")
             .header("X-User-Id", "42")
@@ -117,7 +117,7 @@ class OrderControllerIntegrationTest {
   void requestsWithoutHeaderReturnUnauthorized() throws Exception {
     OrderCreateRequest request = new OrderCreateRequest(List.of(
         new OrderItemRequest(500L, "Hub USB", new BigDecimal("14.99"), 1)
-    ));
+    ), null);
 
     mockMvc.perform(post("/api/orders")
             .contentType("application/json")
@@ -129,5 +129,40 @@ class OrderControllerIntegrationTest {
 
     mockMvc.perform(get("/api/orders/{id}", 1))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void createOrderPersistsShippingAddress() throws Exception {
+    OrderCreateRequest.ShippingAddress shippingAddress = new OrderCreateRequest.ShippingAddress(
+        "123 Market St",
+        "San Francisco",
+        "US",
+        "94105",
+        "Ada",
+        "Lovelace"
+    );
+
+    OrderCreateRequest request = new OrderCreateRequest(List.of(
+        new OrderItemRequest(777L, "Notebook", new BigDecimal("9.99"), 1)
+    ), shippingAddress);
+
+    String response = mockMvc.perform(post("/api/orders")
+            .header("X-User-Id", "55")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNumber())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    Order saved = orderRepository.findById(objectMapper.readTree(response).get("id").asLong())
+        .orElseThrow();
+    assertThat(saved.getShippingStreet()).isEqualTo("123 Market St");
+    assertThat(saved.getShippingCity()).isEqualTo("San Francisco");
+    assertThat(saved.getShippingCountry()).isEqualTo("US");
+    assertThat(saved.getShippingPostalCode()).isEqualTo("94105");
+    assertThat(saved.getShippingFirstName()).isEqualTo("Ada");
+    assertThat(saved.getShippingLastName()).isEqualTo("Lovelace");
   }
 }

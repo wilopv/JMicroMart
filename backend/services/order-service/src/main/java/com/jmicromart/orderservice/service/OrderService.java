@@ -32,6 +32,8 @@ public class OrderService {
     order.setStatus("CREATED");
     order.setCreatedAt(Instant.now());
 
+    applyShippingAddress(order, request.shippingAddress());
+
     List<OrderItem> items = request.items().stream()
         .map(item -> toOrderItem(order, item))
         .toList();
@@ -68,6 +70,31 @@ public class OrderService {
     item.setPrice(request.price());
     item.setQuantity(request.quantity());
     return item;
+  }
+
+  private void applyShippingAddress(Order order, OrderCreateRequest.ShippingAddress address) {
+    if (address == null) {
+      return;
+    }
+    if (isBlank(address.street())
+        || isBlank(address.city())
+        || isBlank(address.country())
+        || isBlank(address.postalCode())
+        || isBlank(address.firstName())
+        || isBlank(address.lastName())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shipping address is incomplete");
+    }
+
+    order.setShippingStreet(address.street());
+    order.setShippingCity(address.city());
+    order.setShippingCountry(address.country());
+    order.setShippingPostalCode(address.postalCode());
+    order.setShippingFirstName(address.firstName());
+    order.setShippingLastName(address.lastName());
+  }
+
+  private boolean isBlank(String value) {
+    return value == null || value.isBlank();
   }
 
   private OrderResponse toResponse(Order order) {

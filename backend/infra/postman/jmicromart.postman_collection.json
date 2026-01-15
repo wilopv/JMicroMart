@@ -192,7 +192,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1001,\n      \"quantity\": 1\n    },\n    {\n      \"productId\": 2002,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": {\n    \"street\": \"Calle Mayor 1\",\n    \"city\": \"Madrid\",\n    \"country\": \"Espana\",\n    \"postalCode\": \"28001\",\n    \"firstName\": \"Maria\",\n    \"lastName\": \"Lopez\"\n  }\n}",
+          "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1001,\n      \"productName\": \"Monitor 27 IPS\",\n      \"price\": 89.99,\n      \"quantity\": 1\n    },\n    {\n      \"productId\": 2002,\n      \"productName\": \"Mouse Ergonomico\",\n      \"price\": 20.00,\n      \"quantity\": 2\n    }\n  ],\n  \"shippingAddress\": {\n    \"street\": \"Calle Mayor 1\",\n    \"city\": \"Madrid\",\n    \"country\": \"Espana\",\n    \"postalCode\": \"28001\",\n    \"firstName\": \"Maria\",\n    \"lastName\": \"Lopez\"\n  }\n}",
           "options": {
             "raw": {
               "language": "json"

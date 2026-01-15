@@ -2,6 +2,7 @@ package com.jmicromart.orderservice.controller;
 
 import com.jmicromart.orderservice.dto.OrderCreateRequest;
 import com.jmicromart.orderservice.dto.OrderResponse;
+import com.jmicromart.orderservice.dto.OrderSummaryResponse;
 import com.jmicromart.orderservice.service.OrderService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,7 @@ public class OrderController {
   /**
    * Lists orders for the authenticated user.
    */
-  public ResponseEntity<List<OrderResponse>> list(
+  public ResponseEntity<List<OrderSummaryResponse>> list(
       @RequestHeader(value = "X-User-Id", required = false) String userId) {
     if (userId == null || userId.isBlank()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

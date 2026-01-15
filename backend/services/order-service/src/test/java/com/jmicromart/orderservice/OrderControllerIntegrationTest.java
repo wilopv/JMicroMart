@@ -96,7 +96,11 @@ class OrderControllerIntegrationTest {
             .header("X-User-Id", "7"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].userId").value("7"));
+        .andExpect(jsonPath("$[0].id").isNumber())
+        .andExpect(jsonPath("$[0].createdAt").isNotEmpty())
+        .andExpect(jsonPath("$[0].total").value(10.00))
+        .andExpect(jsonPath("$[0].status").value("CREATED"))
+        .andExpect(jsonPath("$[0].itemsCount").value(1));
   }
 
   @Test

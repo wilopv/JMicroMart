@@ -4,6 +4,7 @@ import com.jmicromart.orderservice.dto.OrderCreateRequest;
 import com.jmicromart.orderservice.dto.OrderItemRequest;
 import com.jmicromart.orderservice.dto.OrderItemResponse;
 import com.jmicromart.orderservice.dto.OrderResponse;
+import com.jmicromart.orderservice.dto.OrderSummaryResponse;
 import com.jmicromart.orderservice.entity.Order;
 import com.jmicromart.orderservice.entity.OrderItem;
 import com.jmicromart.orderservice.repository.OrderRepository;
@@ -44,9 +45,9 @@ public class OrderService {
     return toResponse(saved);
   }
 
-  public List<OrderResponse> listOrders(String userId) {
+  public List<OrderSummaryResponse> listOrders(String userId) {
     return orderRepository.findAllByUserId(userId).stream()
-        .map(this::toResponse)
+        .map(this::toSummaryResponse)
         .toList();
   }
 
@@ -114,5 +115,15 @@ public class OrderService {
         order.getTotalAmount(),
         order.getCreatedAt(),
         items);
+  }
+
+  private OrderSummaryResponse toSummaryResponse(Order order) {
+    int itemsCount = order.getItems() == null ? 0 : order.getItems().size();
+    return new OrderSummaryResponse(
+        order.getId(),
+        order.getCreatedAt(),
+        order.getTotalAmount(),
+        order.getStatus(),
+        itemsCount);
   }
 }

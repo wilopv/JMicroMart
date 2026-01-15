@@ -114,7 +114,13 @@ public class OrderService {
         order.getStatus(),
         order.getTotalAmount(),
         order.getCreatedAt(),
-        items);
+        items,
+        order.getShippingStreet(),
+        order.getShippingCity(),
+        order.getShippingCountry(),
+        order.getShippingPostalCode(),
+        order.getShippingFirstName(),
+        order.getShippingLastName());
   }
 
   private OrderSummaryResponse toSummaryResponse(Order order) {

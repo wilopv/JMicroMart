@@ -13,5 +13,11 @@ public record OrderResponse(
     String status,
     BigDecimal totalAmount,
     Instant createdAt,
-    List<OrderItemResponse> items
+    List<OrderItemResponse> items,
+    String shippingStreet,
+    String shippingCity,
+    String shippingCountry,
+    String shippingPostalCode,
+    String shippingFirstName,
+    String shippingLastName
 ) {}

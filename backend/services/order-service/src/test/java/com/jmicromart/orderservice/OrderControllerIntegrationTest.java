@@ -150,18 +150,20 @@ class OrderControllerIntegrationTest {
         new OrderItemRequest(777L, "Notebook", new BigDecimal("9.99"), 1)
     ), shippingAddress);
 
-    String response = mockMvc.perform(post("/api/orders")
+    mockMvc.perform(post("/api/orders")
             .header("X-User-Id", "55")
             .contentType("application/json")
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").isNumber())
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
+        .andExpect(jsonPath("$.shippingStreet").value("123 Market St"))
+        .andExpect(jsonPath("$.shippingCity").value("San Francisco"))
+        .andExpect(jsonPath("$.shippingCountry").value("US"))
+        .andExpect(jsonPath("$.shippingPostalCode").value("94105"))
+        .andExpect(jsonPath("$.shippingFirstName").value("Ada"))
+        .andExpect(jsonPath("$.shippingLastName").value("Lovelace"));
 
-    Order saved = orderRepository.findById(objectMapper.readTree(response).get("id").asLong())
-        .orElseThrow();
+    Order saved = orderRepository.findAll().stream().findFirst().orElseThrow();
     assertThat(saved.getShippingStreet()).isEqualTo("123 Market St");
     assertThat(saved.getShippingCity()).isEqualTo("San Francisco");
     assertThat(saved.getShippingCountry()).isEqualTo("US");

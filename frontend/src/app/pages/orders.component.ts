@@ -165,7 +165,12 @@ export class OrdersComponent {
 
     this.ordersService.getOrders().subscribe({
       next: (orders) => {
-        this.orders.set(orders);
+        const sorted = [...orders].sort((a, b) => {
+          const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bTime - aTime;
+        });
+        this.orders.set(sorted);
         this.loading.set(false);
       },
       error: (err) => {

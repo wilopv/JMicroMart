@@ -246,8 +246,6 @@ export class CheckoutComponent {
   }
 
   private loadAddresses(): void {
-    this.addressError.set('');
-
     this.addressesService.getAddresses().subscribe({
       next: (addresses) => {
         this.savedAddresses.set(addresses);

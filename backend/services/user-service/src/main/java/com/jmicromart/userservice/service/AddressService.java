@@ -6,6 +6,8 @@ import com.jmicromart.userservice.entity.Address;
 import com.jmicromart.userservice.repository.AddressRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 /**
@@ -53,5 +55,14 @@ public class AddressService {
         saved.getCity(),
         saved.getCountry(),
         saved.getPostalCode());
+  }
+
+  /**
+   * Deletes an address owned by the user identifier.
+   */
+  public void deleteForUser(String userId, Long addressId) {
+    Address address = addressRepository.findByIdAndUserId(addressId, userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address not found"));
+    addressRepository.delete(address);
   }
 }

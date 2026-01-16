@@ -124,6 +124,19 @@
       }
     },
     {
+      "name": "Delete Address",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/users/me/addresses/{{addressId}}"
+      }
+    },
+    {
       "name": "List Favorites",
       "request": {
         "method": "GET",

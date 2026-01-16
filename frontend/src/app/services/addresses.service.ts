@@ -23,4 +23,11 @@ export class AddressesService {
   createAddress(payload: CreateAddressPayload): Observable<Address> {
     return this.http.post<Address>(`${API_CONFIG.baseUrl}/api/users/me/addresses`, payload);
   }
+
+  /**
+   * Deletes a saved address by id.
+   */
+  deleteAddress(addressId: number | string): Observable<void> {
+    return this.http.delete<void>(`${API_CONFIG.baseUrl}/api/users/me/addresses/${addressId}`);
+  }
 }

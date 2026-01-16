@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AddressesService } from '../services/addresses.service';
+import { SnackbarService } from '../services/snackbar.service';
 import { Address, CreateAddressPayload } from '../models/user/address.model';
-import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
 import { extractHttpErrorMessage } from '../utils/http-errors';
 
 @Component({
   selector: 'app-addresses',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ErrorSnackbarComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="surface">
       <div class="border-b border-subtle surface-muted px-4 py-12 sm:px-6 lg:px-8">
@@ -21,9 +21,7 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
       </div>
 
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div class="mb-6">
-          <app-error-snackbar *ngIf="error()" [message]="error()" />
-        </div>
+        <div class="mb-6"></div>
 
         <section class="mb-10">
           <div class="flex items-center justify-between">
@@ -94,9 +92,16 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
             <div *ngFor="let address of deliveryAddresses()" class="card rounded-lg">
               <div class="flex items-start justify-between">
                 <div>
-                  <p class="text-sm font-semibold text-strong">Dirección</p>
+                  <p class="text-sm font-semibold text-strong">Direccion</p>
                   <p class="text-sm text-muted">{{ address.street }}</p>
                 </div>
+                <button
+                  type="button"
+                  class="btn-link text-sm font-medium text-red-600 hover:text-red-700"
+                  (click)="deleteAddress(address)"
+                >
+                  Eliminar
+                </button>
               </div>
               <div class="mt-4 text-sm text-muted">
                 <p>{{ address.city }}, {{ address.postalCode }}</p>
@@ -119,13 +124,15 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
 export class AddressesComponent {
   deliveryAddresses = signal<Address[]>([]);
   loading = signal(false);
-  error = signal<string>('');
   street = '';
   city = '';
   country = '';
   postalCode = '';
 
-  constructor(private addressesService: AddressesService) {
+  constructor(
+    private addressesService: AddressesService,
+    private snackbarService: SnackbarService
+  ) {
     this.loadAddresses();
   }
 
@@ -138,7 +145,7 @@ export class AddressesComponent {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(extractHttpErrorMessage(err));
+        this.snackbarService.showError(extractHttpErrorMessage(err));
         this.loading.set(false);
       },
     });
@@ -153,7 +160,6 @@ export class AddressesComponent {
       postalCode: this.postalCode,
     };
 
-    this.error.set('');
     this.loading.set(true);
     this.addressesService.createAddress(payload).subscribe({
       next: () => {
@@ -164,8 +170,25 @@ export class AddressesComponent {
         this.loadAddresses();
       },
       error: (err) => {
-        this.error.set(extractHttpErrorMessage(err));
+        this.snackbarService.showError(extractHttpErrorMessage(err));
         this.loading.set(false);
+      },
+    });
+  }
+
+  deleteAddress(address: Address): void {
+    if (!address.id) {
+      this.snackbarService.showError('Direccion invalida.');
+      return;
+    }
+
+    this.addressesService.deleteAddress(address.id).subscribe({
+      next: () => {
+        this.snackbarService.showSuccess('Direccion eliminada correctamente.');
+        this.loadAddresses();
+      },
+      error: (err) => {
+        this.snackbarService.showError(extractHttpErrorMessage(err));
       },
     });
   }

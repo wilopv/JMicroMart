@@ -6,6 +6,20 @@ import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
 import { Order, OrderItem } from '../models/order/order.model';
 import { extractHttpErrorMessage } from '../utils/http-errors';
 
+interface OrderDetail {
+  id: number | string;
+  status?: string;
+  totalAmount?: number;
+  createdAt?: string;
+  items?: OrderItem[];
+  shippingStreet?: string;
+  shippingCity?: string;
+  shippingCountry?: string;
+  shippingPostalCode?: string;
+  shippingFirstName?: string;
+  shippingLastName?: string;
+}
+
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -71,9 +85,48 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
 
             <!-- Order Actions -->
             <div class="mt-4 border-t border-subtle pt-4">
-              <button class="btn-link text-sm font-medium">
-                Ver Detalles
+              <button class="btn-link text-sm font-medium" (click)="toggleDetails(order)">
+                {{ isExpanded(order) ? 'Ocultar detalles' : 'Ver Detalles' }}
               </button>
+            </div>
+
+            <div *ngIf="isExpanded(order)" class="mt-4 border-t border-subtle pt-4">
+              <div *ngIf="isLoadingDetails(order)" class="text-sm text-muted">
+                Cargando detalles...
+              </div>
+              <div *ngIf="detailsError(order)" class="text-sm text-red-700">
+                {{ detailsError(order) }}
+              </div>
+
+              <ng-container *ngIf="orderDetails(order) as detail">
+                <div class="grid gap-6 lg:grid-cols-2">
+                  <div>
+                    <h4 class="text-sm font-semibold text-strong uppercase tracking-wide">Productos</h4>
+                    <div class="mt-3 space-y-2 text-sm text-muted">
+                      <div *ngFor="let item of detail.items || []" class="flex items-center justify-between">
+                        <div>
+                          <p class="text-strong">{{ item.productName || item.name || 'Producto' }}</p>
+                          <p class="text-xs text-subtle">Cantidad: {{ item.quantity }}</p>
+                        </div>
+                        <p class="text-strong">
+                          <span>&#36;</span>{{ getItemSubtotal(item).toFixed(2) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="text-sm font-semibold text-strong uppercase tracking-wide">Envio</h4>
+                    <div class="mt-3 space-y-1 text-sm text-muted">
+                      <p><span class="text-subtle">Nombre:</span> {{ getShippingName(detail) }}</p>
+                      <p><span class="text-subtle">Calle:</span> {{ detail.shippingStreet || '-' }}</p>
+                      <p><span class="text-subtle">Ciudad:</span> {{ detail.shippingCity || '-' }}</p>
+                      <p><span class="text-subtle">Codigo postal:</span> {{ detail.shippingPostalCode || '-' }}</p>
+                      <p><span class="text-subtle">Pais:</span> {{ detail.shippingCountry || '-' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -108,6 +161,10 @@ export class OrdersComponent {
   orders = signal<Order[]>([]);
   loading = signal(false);
   error = signal('');
+  expandedOrderId = signal<string | null>(null);
+  detailsById = signal<Record<string, OrderDetail>>({});
+  detailsLoading = signal<Record<string, boolean>>({});
+  detailsErrors = signal<Record<string, string>>({});
 
   constructor(private ordersService: OrdersService) {
     this.loadOrders();
@@ -178,6 +235,65 @@ export class OrdersComponent {
         this.loading.set(false);
       },
     });
+  }
+
+  toggleDetails(order: Order): void {
+    const orderId = order.id.toString();
+    const current = this.expandedOrderId();
+    if (current === orderId) {
+      this.expandedOrderId.set(null);
+      return;
+    }
+
+    this.expandedOrderId.set(orderId);
+    if (this.detailsById()[orderId]) {
+      return;
+    }
+
+    this.detailsLoading.set({ ...this.detailsLoading(), [orderId]: true });
+    this.detailsErrors.set({ ...this.detailsErrors(), [orderId]: '' });
+
+    this.ordersService.getOrderById(order.id).subscribe({
+      next: (detail) => {
+        this.detailsById.set({ ...this.detailsById(), [orderId]: detail as OrderDetail });
+        this.detailsLoading.set({ ...this.detailsLoading(), [orderId]: false });
+      },
+      error: (err) => {
+        this.detailsLoading.set({ ...this.detailsLoading(), [orderId]: false });
+        this.detailsErrors.set({
+          ...this.detailsErrors(),
+          [orderId]: extractHttpErrorMessage(err),
+        });
+      },
+    });
+  }
+
+  isExpanded(order: Order): boolean {
+    return this.expandedOrderId() === order.id.toString();
+  }
+
+  isLoadingDetails(order: Order): boolean {
+    return this.detailsLoading()[order.id.toString()] === true;
+  }
+
+  detailsError(order: Order): string {
+    return this.detailsErrors()[order.id.toString()] || '';
+  }
+
+  orderDetails(order: Order): OrderDetail | null {
+    return this.detailsById()[order.id.toString()] || null;
+  }
+
+  getItemSubtotal(item: OrderItem): number {
+    const price = typeof item.price === 'number' ? item.price : 0;
+    return price * item.quantity;
+  }
+
+  getShippingName(detail: OrderDetail): string {
+    const first = detail.shippingFirstName || '';
+    const last = detail.shippingLastName || '';
+    const full = `${first} ${last}`.trim();
+    return full || '-';
   }
 
   private normalizeStatus(status?: string): string {

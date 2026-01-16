@@ -1,19 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-
-export interface Order {
-  id: string;
-  date: Date;
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: number;
-}
+import { OrdersService } from '../services/orders.service';
+import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
+import { Order, OrderItem } from '../models/order/order.model';
+import { extractHttpErrorMessage } from '../utils/http-errors';
 
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ErrorSnackbarComponent],
   template: `
     <div class="surface">
       <!-- Header -->
@@ -26,9 +22,17 @@ export interface Order {
 
       <!-- Content -->
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div *ngIf="orders.length > 0; else noOrders" class="space-y-4">
+        <div class="mb-6">
+          <app-error-snackbar *ngIf="error()" [message]="error()" />
+        </div>
+
+        <div *ngIf="loading()" class="text-sm text-muted">
+          Cargando pedidos...
+        </div>
+
+        <div *ngIf="orders().length > 0; else noOrders" class="space-y-4">
           <!-- Orders List -->
-          <div *ngFor="let order of orders" class="card card-interactive rounded-lg p-6 shadow-none">
+          <div *ngFor="let order of orders()" class="card card-interactive rounded-lg p-6 shadow-none">
             <div class="grid gap-6 md:grid-cols-5 items-center">
               <!-- Order ID -->
               <div>
@@ -39,28 +43,28 @@ export interface Order {
               <!-- Date -->
               <div>
                 <p class="text-xs text-subtle uppercase font-semibold">Fecha</p>
-                <p class="mt-1 text-strong">{{ order.date | date: 'dd/MM/yyyy' }}</p>
+                <p class="mt-1 text-strong">{{ getOrderDate(order) | date: 'dd/MM/yyyy' }}</p>
               </div>
 
               <!-- Items Count -->
               <div>
                 <p class="text-xs text-subtle uppercase font-semibold">Artículos</p>
-                <p class="mt-1 text-strong">{{ order.items }} producto(s)</p>
+                <p class="mt-1 text-strong">{{ getItemCount(order) }} producto(s)</p>
               </div>
 
               <!-- Total -->
               <div>
                 <p class="text-xs text-subtle uppercase font-semibold">Total</p>
                 <p class="mt-1 text-lg font-bold text-strong">
-                  <span>&#36;</span>{{ order.total.toFixed(2) }}
+                  <span>&#36;</span>{{ getOrderTotal(order).toFixed(2) }}
                 </p>
               </div>
 
               <!-- Status -->
               <div class="text-right md:text-left">
                 <p class="text-xs text-subtle uppercase font-semibold">Estado</p>
-                <span [class]="getStatusClass(order.status)" class="mt-1 inline-block px-3 py-1 rounded-full text-xs font-semibold">
-                  {{ getStatusText(order.status) }}
+                <span [class]="getStatusClass(order)" class="mt-1 inline-block px-3 py-1 rounded-full text-xs font-semibold">
+                  {{ getStatusText(order) }}
                 </span>
               </div>
             </div>
@@ -76,7 +80,7 @@ export interface Order {
 
         <!-- Empty State -->
         <ng-template #noOrders>
-          <div class="card rounded-lg surface-muted p-12 text-center shadow-none">
+          <div *ngIf="!loading()" class="card rounded-lg surface-muted p-12 text-center shadow-none">
             <svg class="mx-auto h-12 w-12 icon-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
@@ -101,31 +105,16 @@ export interface Order {
   styles: [],
 })
 export class OrdersComponent {
-  orders: Order[] = [
-    {
-      id: '10001',
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      total: 299.99,
-      status: 'delivered',
-      items: 2,
-    },
-    {
-      id: '10002',
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      total: 149.99,
-      status: 'shipped',
-      items: 1,
-    },
-    {
-      id: '10003',
-      date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      total: 89.99,
-      status: 'processing',
-      items: 1,
-    },
-  ];
+  orders = signal<Order[]>([]);
+  loading = signal(false);
+  error = signal('');
 
-  getStatusText(status: string): string {
+  constructor(private ordersService: OrdersService) {
+    this.loadOrders();
+  }
+
+  getStatusText(order: Order): string {
+    const status = this.normalizeStatus(order.status);
     const statusMap: { [key: string]: string } = {
       pending: 'Pendiente',
       processing: 'Procesando',
@@ -133,10 +122,11 @@ export class OrdersComponent {
       delivered: 'Entregado',
       cancelled: 'Cancelado',
     };
-    return statusMap[status] || status;
+    return statusMap[status] || status || 'Pendiente';
   }
 
-  getStatusClass(status: string): string {
+  getStatusClass(order: Order): string {
+    const status = this.normalizeStatus(order.status);
     const classMap: { [key: string]: string } = {
       pending: 'status-pill',
       processing: 'status-pill',
@@ -145,5 +135,57 @@ export class OrdersComponent {
       cancelled: 'status-pill',
     };
     return classMap[status] || 'status-pill';
+  }
+
+  getOrderDate(order: Order): Date {
+    if (order.createdAt) {
+      return new Date(order.createdAt);
+    }
+    const fallback = (order as { date?: string | Date }).date;
+    return fallback ? new Date(fallback) : new Date();
+  }
+
+  getItemCount(order: Order): number {
+    if (typeof order.itemsCount === 'number') {
+      return order.itemsCount;
+    }
+    return this.sumItems(order.items);
+  }
+
+  getOrderTotal(order: Order): number {
+    if (typeof order.total === 'number') {
+      return order.total;
+    }
+    return this.sumItems(order.items, true);
+  }
+
+  private loadOrders(): void {
+    this.loading.set(true);
+    this.error.set('');
+
+    this.ordersService.getOrders().subscribe({
+      next: (orders) => {
+        this.orders.set(orders);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(extractHttpErrorMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private normalizeStatus(status?: string): string {
+    return (status || 'pending').toString().toLowerCase();
+  }
+
+  private sumItems(items: OrderItem[] = [], usePrice = false): number {
+    return items.reduce((sum, item) => {
+      if (usePrice) {
+        const price = typeof item.price === 'number' ? item.price : 0;
+        return sum + price * item.quantity;
+      }
+      return sum + item.quantity;
+    }, 0);
   }
 }

@@ -1,11 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../services/cart.service';
 import { OrdersService } from '../services/orders.service';
 import { AddressesService } from '../services/addresses.service';
-import { ErrorSnackbarComponent } from '../components/error-snackbar.component';
+import { SnackbarService } from '../services/snackbar.service';
 import { Address } from '../models/user/address.model';
 import { CreateOrderRequest } from '../models/order/order.model';
 import { extractHttpErrorMessage } from '../utils/http-errors';
@@ -13,7 +13,7 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ErrorSnackbarComponent],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <div class="surface">
       <!-- Header -->
@@ -25,9 +25,7 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
 
       <!-- Checkout Content -->
       <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div class="mb-6">
-          <app-error-snackbar *ngIf="errorMessage()" [message]="errorMessage()" />
-        </div>
+        <div class="mb-6"></div>
 
         <div class="grid gap-12 lg:grid-cols-3">
           <!-- Checkout Form -->
@@ -200,10 +198,6 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
               {{ loading() ? 'Procesando...' : 'Realizar Orden' }}
             </button>
 
-            <p *ngIf="success()" class="mt-4 text-sm font-medium text-emerald-600">
-              {{ success() }}
-            </p>
-
             <!-- Back to Cart -->
             <a
               routerLink="/cart"
@@ -220,11 +214,8 @@ import { extractHttpErrorMessage } from '../utils/http-errors';
 })
 export class CheckoutComponent {
   loading = signal(false);
-  error = signal('');
-  success = signal('');
   savedAddresses = signal<Address[]>([]);
   selectedAddressIndex = signal<number | null>(null);
-  addressError = signal('');
   firstName = '';
   lastName = '';
   street = '';
@@ -235,13 +226,11 @@ export class CheckoutComponent {
   constructor(
     public cartService: CartService,
     private ordersService: OrdersService,
-    private addressesService: AddressesService
+    private addressesService: AddressesService,
+    private router: Router,
+    private snackbarService: SnackbarService
   ) {
     this.loadAddresses();
-  }
-
-  errorMessage(): string {
-    return this.addressError() || this.error();
   }
 
   selectAddress(index: number | null): void {
@@ -264,7 +253,8 @@ export class CheckoutComponent {
         this.savedAddresses.set(addresses);
       },
       error: (err) => {
-        this.addressError.set(extractHttpErrorMessage(err));
+        const message = extractHttpErrorMessage(err);
+        this.snackbarService.showError(message);
       },
     });
   }
@@ -281,26 +271,40 @@ export class CheckoutComponent {
       return;
     }
 
+    if (!this.street || !this.city || !this.country || !this.postalCode || !this.firstName || !this.lastName) {
+      this.snackbarService.showError('Completa todos los campos de envio.');
+      return;
+    }
+
     const payload: CreateOrderRequest = {
       items: this.cartService.cart().map((item) => ({
         productId: item.id,
-        quantity: item.quantity,
+        productName: item.name,
         price: item.price,
+        quantity: item.quantity,
       })),
+      shippingAddress: {
+        street: this.street,
+        city: this.city,
+        country: this.country,
+        postalCode: this.postalCode,
+        firstName: this.firstName,
+        lastName: this.lastName,
+      },
     };
 
-    this.error.set('');
-    this.success.set('');
     this.loading.set(true);
 
     this.ordersService.createOrder(payload).subscribe({
       next: () => {
         this.loading.set(false);
-        this.success.set('Orden realizada exitosamente.');
+        this.cartService.clearCart();
+        this.snackbarService.showSuccess('Pedido realizado correctamente.');
+        this.router.navigate(['/orders']);
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(extractHttpErrorMessage(err));
+        this.snackbarService.showError(extractHttpErrorMessage(err));
       },
     });
   }

@@ -11,6 +11,9 @@ spring:
           predicates:
             - Path=/api/products/**
 
+cors:
+  allowed-origins: http://localhost:4200
+
 eureka:
   client:
     enabled: false

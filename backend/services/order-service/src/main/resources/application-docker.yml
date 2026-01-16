@@ -10,6 +10,9 @@ spring:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
 eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
   instance:
     hostname: order-service
     prefer-ip-address: false

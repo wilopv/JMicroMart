@@ -14,6 +14,7 @@ spring:
         corsConfigurations:
           '[/**]':
             allowedOrigins: ${cors.allowed-origins}
+            allowCredentials: true
             allowedMethods:
               - GET
               - POST
@@ -21,10 +22,10 @@ spring:
               - DELETE
               - OPTIONS
             allowedHeaders:
-              - Accept
               - Authorization
               - Content-Type
-              - Origin
+            exposedHeaders:
+              - Authorization
       routes:
         - id: user-service
           uri: lb://USER-SERVICE
